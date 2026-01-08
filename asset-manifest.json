@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/goldgardenv2/static/css/main.e6c13ad2.css",
+    "main.js": "/goldgardenv2/static/js/main.140b3ced.js",
+    "static/js/453.5322aeb5.chunk.js": "/goldgardenv2/static/js/453.5322aeb5.chunk.js",
+    "index.html": "/goldgardenv2/index.html",
+    "main.e6c13ad2.css.map": "/goldgardenv2/static/css/main.e6c13ad2.css.map",
+    "main.140b3ced.js.map": "/goldgardenv2/static/js/main.140b3ced.js.map",
+    "453.5322aeb5.chunk.js.map": "/goldgardenv2/static/js/453.5322aeb5.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.140b3ced.js"
+  ]
+}
