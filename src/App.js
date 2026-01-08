@@ -1,29 +1,66 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Timer, PackageOpen, MapPin, Flame, AlertTriangle, DollarSign, Clock, TrendingUp, Shield, Zap, Maximize, Sparkles, Skull, User } from 'lucide-react';
 
-const GRID_SIZE = 20;
-const CELL_SIZE = 30;
-const BASE_INVENTORY_SIZE = 4;
+const GRID_SIZE = 30;
+const CELL_SIZE = 25;
+const BASE_INVENTORY_SIZE = 3;
 const BASE_MAX_OXYGEN = 100;
 const BASE_OXYGEN_DRAIN_RATE = 0.15;
 const BASE_EXTRACTION_TIME = 3000;
 
 const PlantDatabase = {
+  // Common - 10 растений
   MINT: { name: 'Мята', emoji: '🌿', value: 15, rarity: 'common', size: [1, 1], hot: false, fragile: false, growTime: 180000 },
   FERN: { name: 'Папоротник', emoji: '🌿', value: 18, rarity: 'common', size: [1, 1], hot: false, fragile: false, growTime: 180000 },
   DANDELION: { name: 'Одуванчик', emoji: '🌼', value: 12, rarity: 'common', size: [1, 1], hot: false, fragile: false, growTime: 180000 },
   CHAMOMILE: { name: 'Ромашка', emoji: '🌼', value: 20, rarity: 'common', size: [1, 1], hot: false, fragile: false, growTime: 180000 },
+  CLOVER: { name: 'Клевер', emoji: '🍀', value: 14, rarity: 'common', size: [1, 1], hot: false, fragile: false, growTime: 180000 },
+  GRASS: { name: 'Трава', emoji: '🌱', value: 10, rarity: 'common', size: [1, 1], hot: false, fragile: false, growTime: 180000 },
+  DAISY: { name: 'Маргаритка', emoji: '🌼', value: 16, rarity: 'common', size: [1, 1], hot: false, fragile: false, growTime: 180000 },
+  MOSS: { name: 'Мох', emoji: '🪴', value: 13, rarity: 'common', size: [1, 1], hot: false, fragile: false, growTime: 180000 },
+  REED: { name: 'Тростник', emoji: '🌾', value: 17, rarity: 'common', size: [1, 1], hot: false, fragile: false, growTime: 180000 },
+  WHEAT: { name: 'Пшеница', emoji: '🌾', value: 19, rarity: 'common', size: [1, 1], hot: false, fragile: false, growTime: 180000 },
+  
+  // Rare - 15 растений
   EDELWEISS: { name: 'Эдельвейс', emoji: '🏔️', value: 45, rarity: 'rare', size: [1, 1], hot: false, fragile: true, growTime: 240000 },
   DROSERA: { name: 'Росянка', emoji: '🥀', value: 60, rarity: 'rare', size: [1, 1], hot: true, fragile: false, growTime: 240000 },
   JASMINE: { name: 'Жасмин', emoji: '🌙', value: 55, rarity: 'rare', size: [1, 1], hot: false, fragile: false, growTime: 240000 },
   ALOE: { name: 'Алоэ', emoji: '🌵', value: 50, rarity: 'rare', size: [1, 1], hot: false, fragile: true, growTime: 240000 },
   CHILI: { name: 'Чили', emoji: '🌶️', value: 65, rarity: 'rare', size: [1, 1], hot: true, fragile: false, growTime: 240000 },
+  LAVENDER: { name: 'Лаванда', emoji: '💜', value: 52, rarity: 'rare', size: [1, 1], hot: false, fragile: false, growTime: 240000 },
+  BAMBOO: { name: 'Бамбук', emoji: '🎋', value: 58, rarity: 'rare', size: [1, 1], hot: false, fragile: false, growTime: 240000 },
+  SAKURA: { name: 'Сакура', emoji: '🌸', value: 70, rarity: 'rare', size: [1, 1], hot: false, fragile: true, growTime: 240000 },
+  CACTUS: { name: 'Кактус', emoji: '🌵', value: 48, rarity: 'rare', size: [1, 1], hot: true, fragile: false, growTime: 240000 },
+  TULIP: { name: 'Тюльпан', emoji: '🌷', value: 54, rarity: 'rare', size: [1, 1], hot: false, fragile: true, growTime: 240000 },
+  ROSE: { name: 'Роза', emoji: '🌹', value: 62, rarity: 'rare', size: [1, 1], hot: false, fragile: true, growTime: 240000 },
+  LILY: { name: 'Лилия', emoji: '🌺', value: 56, rarity: 'rare', size: [1, 1], hot: false, fragile: true, growTime: 240000 },
+  SUNFLOWER: { name: 'Подсолнух', emoji: '🌻', value: 51, rarity: 'rare', size: [1, 1], hot: true, fragile: false, growTime: 240000 },
+  POPPY: { name: 'Мак', emoji: '🌺', value: 59, rarity: 'rare', size: [1, 1], hot: false, fragile: true, growTime: 240000 },
+  THISTLE: { name: 'Чертополох', emoji: '🥀', value: 47, rarity: 'rare', size: [1, 1], hot: false, fragile: false, growTime: 240000 },
+  
+  // Epic - 7 растений
   LOTUS: { name: 'Лотос', emoji: '🪷', value: 120, rarity: 'epic', size: [2, 1], hot: false, fragile: true, growTime: 300000 },
   GINSENG: { name: 'Женьшень', emoji: '🧧', value: 150, rarity: 'epic', size: [2, 1], hot: false, fragile: false, growTime: 300000 },
   ORCHID: { name: 'Чёрная орхидея', emoji: '🖤', value: 140, rarity: 'epic', size: [2, 1], hot: false, fragile: true, growTime: 300000 },
-  PROTEA: { name: 'Протея', emoji: '👑', value: 180, rarity: 'epic', size: [2, 2], hot: false, fragile: false, growTime: 300000 },
+  PROTEA: { name: 'Протея', emoji: '🌺', value: 180, rarity: 'epic', size: [2, 2], hot: false, fragile: false, growTime: 300000 },
+  VENUS_TRAP: { name: 'Венерина мухоловка', emoji: '🪴', value: 135, rarity: 'epic', size: [2, 1], hot: true, fragile: true, growTime: 300000 },
+  GHOST_ORCHID: { name: 'Призрачная орхидея', emoji: '👻', value: 165, rarity: 'epic', size: [2, 1], hot: false, fragile: true, growTime: 300000 },
+  CORPSE_FLOWER: { name: 'Трупный цветок', emoji: '💀', value: 175, rarity: 'epic', size: [2, 2], hot: true, fragile: true, growTime: 300000 },
+  
+  // Legendary - 3 растения
   TREE_LIFE: { name: 'Древо жизни', emoji: '🌳', value: 350, rarity: 'legendary', size: [2, 2], hot: false, fragile: true, growTime: 420000 },
-  RAFFLESIA: { name: 'Раффлезия', emoji: '🌸', value: 500, rarity: 'legendary', size: [2, 2], hot: true, fragile: true, growTime: 420000 }
+  RAFFLESIA: { name: 'Раффлезия', emoji: '🌸', value: 500, rarity: 'legendary', size: [2, 2], hot: true, fragile: true, growTime: 420000 },
+  DRAGON_TREE: { name: 'Драконово дерево', emoji: '🐉', value: 450, rarity: 'legendary', size: [2, 2], hot: true, fragile: false, growTime: 420000 },
+  
+  // Mythical - 8 сверхредких растений
+  PHOENIX_FLOWER: { name: 'Цветок Феникса', emoji: '🔥', value: 800, rarity: 'mythical', size: [2, 2], hot: true, fragile: true, growTime: 600000 },
+  MOONLIGHT_BLOOM: { name: 'Лунный цветок', emoji: '🌙', value: 950, rarity: 'mythical', size: [2, 2], hot: false, fragile: true, growTime: 600000 },
+  STAR_LOTUS: { name: 'Звёздный лотос', emoji: '⭐', value: 1200, rarity: 'mythical', size: [2, 2], hot: false, fragile: true, growTime: 600000 },
+  VOID_ROSE: { name: 'Роза Бездны', emoji: '🌑', value: 1100, rarity: 'mythical', size: [2, 2], hot: false, fragile: true, growTime: 600000 },
+  CRYSTAL_ORCHID: { name: 'Кристальная орхидея', emoji: '💎', value: 1500, rarity: 'mythical', size: [2, 2], hot: false, fragile: true, growTime: 600000 },
+  ETERNAL_FLAME: { name: 'Вечное пламя', emoji: '🕯️', value: 1350, rarity: 'mythical', size: [2, 2], hot: true, fragile: true, growTime: 600000 },
+  SOUL_BLOSSOM: { name: 'Цветок души', emoji: '✨', value: 1800, rarity: 'mythical', size: [2, 2], hot: false, fragile: true, growTime: 600000 },
+  COSMIC_TREE: { name: 'Космическое древо', emoji: '🌌', value: 2500, rarity: 'mythical', size: [2, 2], hot: false, fragile: true, growTime: 600000 }
 };
 
 const Skins = {
@@ -61,7 +98,7 @@ const BioScavenger = () => {
   const [plants, setPlants] = useState([]);
   const [obstacles, setObstacles] = useState([]);
   const [inventory, setInventory] = useState([]);
-  const [extractionZone, setExtractionZone] = useState({ x: 18, y: 18 });
+  const [extractionZone, setExtractionZone] = useState({ x: 28, y: 28 });
   const [extracting, setExtracting] = useState(null);
   const [extractProgress, setExtractProgress] = useState(0);
   const [gameOver, setGameOver] = useState(false);
@@ -125,56 +162,69 @@ const BioScavenger = () => {
   const getDamageMultiplier = () => skills.ARMOR > 0 ? 0.85 : 1.0;
 
   const generateMap = () => {
-    const newPlants = [];
-    const newDangerZones = [];
-    const newObstacles = [];
+  const newPlants = [];
+  const newDangerZones = [];
+  const newObstacles = [];
+  
+  // Генерация препятствий
+  for (let i = 0; i < 50; i++) {
+    const x = Math.floor(Math.random() * (GRID_SIZE - 4)) + 2;
+    const y = Math.floor(Math.random() * (GRID_SIZE - 4)) + 2;
+    if ((x === 1 && y === 1) || (x >= GRID_SIZE - 3 && y >= GRID_SIZE - 3)) continue;
+    newObstacles.push({ x, y, type: Math.random() > 0.5 ? '🌲' : '🪨' });
+  }
+  
+  // Подготовка списков растений по редкости
+  const plantKeys = Object.keys(PlantDatabase);
+  const commonPlants = plantKeys.filter(k => PlantDatabase[k].rarity === 'common');
+  const rarePlants = plantKeys.filter(k => PlantDatabase[k].rarity === 'rare');
+  const epicPlants = plantKeys.filter(k => PlantDatabase[k].rarity === 'epic');
+  const legendaryPlants = plantKeys.filter(k => PlantDatabase[k].rarity === 'legendary');
+  const mythicalPlants = plantKeys.filter(k => PlantDatabase[k].rarity === 'mythical');
+  
+  // Генерация растений
+  for (let i = 0; i < 40; i++) {
+    const rand = Math.random();
+    let selectedKey;
     
-    for (let i = 0; i < 30; i++) {
-      const x = Math.floor(Math.random() * (GRID_SIZE - 4)) + 2;
-      const y = Math.floor(Math.random() * (GRID_SIZE - 4)) + 2;
-      if ((x === 1 && y === 1) || (x === 18 && y === 18)) continue;
-      newObstacles.push({ x, y, type: Math.random() > 0.5 ? '🌲' : '🪨' });
+    if (rand < 0.50) {  // 50% - common
+      selectedKey = commonPlants[Math.floor(Math.random() * commonPlants.length)];
+    } else if (rand < 0.80) {  // 30% - rare
+      selectedKey = rarePlants[Math.floor(Math.random() * rarePlants.length)];
+    } else if (rand < 0.93) {  // 13% - epic
+      selectedKey = epicPlants[Math.floor(Math.random() * epicPlants.length)];
+    } else if (rand < 0.99) {  // 6% - legendary
+      selectedKey = legendaryPlants[Math.floor(Math.random() * legendaryPlants.length)];
+    } else {  // 1% - mythical
+      selectedKey = mythicalPlants[Math.floor(Math.random() * mythicalPlants.length)];
     }
     
-    const plantKeys = Object.keys(PlantDatabase);
-    for (let i = 0; i < 20; i++) {
-      const rand = Math.random();
-      let selectedKey;
-      if (rand < 0.5) {
-        selectedKey = plantKeys.filter(k => PlantDatabase[k].rarity === 'common')[Math.floor(Math.random() * 4)];
-      } else if (rand < 0.8) {
-        selectedKey = plantKeys.filter(k => PlantDatabase[k].rarity === 'rare')[Math.floor(Math.random() * 5)];
-      } else if (rand < 0.95) {
-        selectedKey = plantKeys.filter(k => PlantDatabase[k].rarity === 'epic')[Math.floor(Math.random() * 4)];
-      } else {
-        selectedKey = plantKeys.filter(k => PlantDatabase[k].rarity === 'legendary')[Math.floor(Math.random() * 2)];
-      }
-      
-      const plantData = PlantDatabase[selectedKey];
-      let x, y, attempts = 0;
-      do {
-        x = Math.floor(Math.random() * (GRID_SIZE - 4)) + 2;
-        y = Math.floor(Math.random() * (GRID_SIZE - 4)) + 2;
-        attempts++;
-      } while (newObstacles.some(o => o.x === x && o.y === y) && attempts < 50);
-      
-      newPlants.push({ id: Math.random(), x, y, key: selectedKey, data: plantData });
-    }
+    const plantData = PlantDatabase[selectedKey];
+    let x, y, attempts = 0;
+    do {
+      x = Math.floor(Math.random() * (GRID_SIZE - 4)) + 2;
+      y = Math.floor(Math.random() * (GRID_SIZE - 4)) + 2;
+      attempts++;
+    } while (newObstacles.some(o => o.x === x && o.y === y) && attempts < 50);
     
-    for (let i = 0; i < 10; i++) {
-      let x, y, attempts = 0;
-      do {
-        x = Math.floor(Math.random() * (GRID_SIZE - 2)) + 1;
-        y = Math.floor(Math.random() * (GRID_SIZE - 2)) + 1;
-        attempts++;
-      } while (newObstacles.some(o => o.x === x && o.y === y) && attempts < 50);
-      newDangerZones.push({ x, y });
-    }
-    
-    setPlants(newPlants);
-    setDangerZones(newDangerZones);
-    setObstacles(newObstacles);
-  };
+    newPlants.push({ id: Math.random(), x, y, key: selectedKey, data: plantData });
+  }
+  
+  // Генерация опасных зон
+  for (let i = 0; i < 20; i++) {
+    let x, y, attempts = 0;
+    do {
+      x = Math.floor(Math.random() * (GRID_SIZE - 2)) + 1;
+      y = Math.floor(Math.random() * (GRID_SIZE - 2)) + 1;
+      attempts++;
+    } while (newObstacles.some(o => o.x === x && o.y === y) && attempts < 50);
+    newDangerZones.push({ x, y });
+  }
+  
+  setPlants(newPlants);
+  setDangerZones(newDangerZones);
+  setObstacles(newObstacles);
+};
 
   const startRaid = () => {
     setScreen('raid');
@@ -488,7 +538,7 @@ const BioScavenger = () => {
                 <h2 className="text-xl font-bold">СКЛАД ({stash.length})</h2>
                 {stash.length > 0 && (
                   <button onClick={sellAllItems} className="px-4 py-2 bg-red-900 border border-red-500 text-red-400 hover:bg-red-800 transition-all">
-                    ПРОДАТЬ ВСЁ ({stash.reduce((sum, item) => sum + item.data.value, 0)} ₽)
+                    ПРОДАТЬ ВСЁ НАХУЙ ({stash.reduce((sum, item) => sum + item.data.value, 0)} ₽)
                   </button>
                 )}
               </div>
